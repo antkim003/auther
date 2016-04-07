@@ -6,10 +6,11 @@ var User = require('../api/users/user.model');
 
 app.use(require('./logging.middleware'));
 app.use(require('./session.middleware'));
-
+app.use(require('./passport.middleware'))
 app.use(require('./requestState.middleware'));
 
 app.use(require('./statics.middleware'));
+
 
 
 // make sure this comes after the session middleware, otherwise req.session will not be available
@@ -20,16 +21,39 @@ app.post('/login', function (req, res, next) {
     })
     .exec()
     .then(function (user) {
+        console.log('heres the login user');
         if (!user) {
             res.sendStatus(401);
             // res.redirect('/error');
         } else {
             req.session.userId = user._id;
-            res.sendStatus(200);
+            res.json(user);
             // res.redirect('/stories');
         }
     })
     .then(null, next);
+});
+
+// log out here
+app.get('/logout', function(req,res,next) {
+  console.log('logout reqsession: ', req.session);
+  if (!req.session.userId) {
+    next();
+  } else {
+    req.session.userId = null;
+    res.sendStatus(200);
+  }
+});
+
+app.get('/auth/me', function(req, res, next) {
+    if (req.session.userId) {
+        User.findById(req.session.userId)
+            .then(function(user) {
+                res.json(user);
+            });
+    } else {
+        res.sendStatus(204);
+    }
 });
 
 

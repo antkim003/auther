@@ -1,4 +1,4 @@
-app.controller('SignupCtrl', function($scope, AuthFactory, $location) {
+app.controller('SignupCtrl', function($scope, AuthFactory, $location, $rootScope) {
   $scope.submitSignupForm = function() {
     var data = {
       email: $scope.email,
@@ -6,6 +6,8 @@ app.controller('SignupCtrl', function($scope, AuthFactory, $location) {
     };
     AuthFactory.signup(data)
       .then(function(response) {
+        app.value('currentUser', response.data);
+        $rootScope.currentUser = response.data;
         $location.path('/users/' + response.data._id);
       })
       .catch(function(err) {
